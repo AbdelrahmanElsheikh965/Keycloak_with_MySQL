@@ -1,0 +1,44 @@
+version: '3.9'
+
+services:
+
+  db:
+    image: mysql:5.7
+    ports:
+      - 3366:3306
+    restart: unless-stopped
+    environment:
+      MYSQL_USER: keycloak_user
+      MYSQL_PASSWORD: keycloak_password
+      MYSQL_DATABASE: keycloak_db
+      MYSQL_ROOT_PASSWORD: root_password
+    volumes:
+      - keycloak_volume:/var/lib/mysql
+    networks:
+      - keycloak_network
+
+  keycloak-w:
+    image: jboss/keycloak:14.0.0
+    ports:
+      - 8181:8080
+    restart: unless-stopped
+    environment:
+      KEYCLOAK_USER: admin_user
+      KEYCLOAK_PASSWORD: admin_password
+      DB_PORT: 3306
+      DB_ADDR: db
+      DB_USER: keycloak_user
+      DB_VENDOR: mysql
+      DB_PASSWORD: keycloak_password
+      DB_DATABASE: keycloak_db
+    networks:
+      - keycloak_network
+    volumes:
+      - ./target:/opt/jboss/keycloak/standalone/deployments
+    depends_on:
+      - db
+
+volumes:
+  keycloak_volume:
+networks:
+  keycloak_network:
